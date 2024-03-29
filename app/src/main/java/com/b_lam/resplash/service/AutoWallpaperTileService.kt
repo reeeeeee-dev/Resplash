@@ -1,5 +1,6 @@
 package com.b_lam.resplash.service
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Build
@@ -30,6 +31,7 @@ class AutoWallpaperTileService: TileService(), LifecycleOwner, KoinComponent {
 
     private val notificationManager: NotificationManager by inject()
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onClick() {
         qsTile?.let {
             when (it.state) {
@@ -40,7 +42,12 @@ class AutoWallpaperTileService: TileService(), LifecycleOwner, KoinComponent {
                 else -> unlockAndRun {
                     Intent(this@AutoWallpaperTileService, AutoWallpaperSettingsActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        startActivityAndCollapse(this)
+                        startActivityAndCollapse(PendingIntent.getActivity(
+                            applicationContext,
+                            0,
+                            this,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                        ))
                     }
                 }
             }
@@ -73,7 +80,7 @@ class AutoWallpaperTileService: TileService(), LifecycleOwner, KoinComponent {
                             notificationManager.showTileServiceDownloadingNotification()
                         WorkInfo.State.SUCCEEDED ->
                             notificationManager.hideTileServiceNotification()
-                        WorkInfo.State.FAILED, WorkInfo.State.CANCELLED ->
+                        WorkInfo.State.FAILED, WorkInfo.State.CANCELLED, null ->
                             notificationManager.showTileServiceErrorNotification()
                     }
                 }
@@ -90,13 +97,6 @@ class AutoWallpaperTileService: TileService(), LifecycleOwner, KoinComponent {
     override fun onBind(intent: Intent): IBinder? {
         dispatcher.onServicePreSuperOnBind()
         return super.onBind(intent)
-    }
-
-    @Suppress("DEPRECATION")
-    @CallSuper
-    override fun onStart(intent: Intent?, startId: Int) {
-        dispatcher.onServicePreSuperOnStart()
-        super.onStart(intent, startId)
     }
 
     @CallSuper

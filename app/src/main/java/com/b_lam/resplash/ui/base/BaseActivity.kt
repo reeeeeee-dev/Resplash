@@ -2,19 +2,18 @@ package com.b_lam.resplash.ui.base
 
 import android.app.ActivityManager.TaskDescription
 import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.addCallback
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.viewbinding.ViewBinding
 import com.b_lam.resplash.R
 import com.b_lam.resplash.domain.SharedPreferencesRepository
-import com.b_lam.resplash.ui.main.MainActivity
 import com.b_lam.resplash.util.NotificationManager
 import com.b_lam.resplash.util.applyLanguage
 import com.b_lam.resplash.util.getThemeAttrColor
@@ -34,6 +33,9 @@ abstract class BaseActivity(@LayoutRes contentLayoutId: Int) : AppCompatActivity
 
         setRecentAppsHeaderColor()
         applyLanguage(sharedPreferencesRepository.locale)
+        onBackPressedDispatcher.addCallback(this) {
+            finish()
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -52,15 +54,6 @@ abstract class BaseActivity(@LayoutRes contentLayoutId: Int) : AppCompatActivity
                 true
             }
             else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onBackPressed() {
-        if (isTaskRoot && this !is MainActivity) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        } else {
-            super.onBackPressed()
         }
     }
 

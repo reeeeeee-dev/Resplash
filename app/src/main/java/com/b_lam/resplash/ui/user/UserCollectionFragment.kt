@@ -2,6 +2,7 @@ package com.b_lam.resplash.ui.user
 
 import android.app.Activity
 import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContracts
 import com.b_lam.resplash.ui.collection.CollectionAdapter
 import com.b_lam.resplash.ui.collection.CollectionFragment
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel

@@ -45,8 +45,6 @@ class CachedPurchase(val data: Purchase) {
 
     @Ignore
     val purchaseToken = data.purchaseToken
-    @Ignore
-    val sku = data.sku
 
     override fun equals(other: Any?): Boolean {
         return when (other) {

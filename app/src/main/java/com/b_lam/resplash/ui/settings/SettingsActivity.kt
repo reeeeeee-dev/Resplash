@@ -2,8 +2,10 @@ package com.b_lam.resplash.ui.settings
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.core.app.NavUtils
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -73,6 +75,7 @@ class SettingsActivity : BaseActivity(R.layout.activity_settings) {
             }
         }
 
+        @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
             if (key == "language" || key == "layout" ||
                 key == "load_quality" || key == "long_press_download") {
@@ -81,11 +84,11 @@ class SettingsActivity : BaseActivity(R.layout.activity_settings) {
 
             if (key == "language") {
                 activity?.finish()
-                activity?.overridePendingTransition( 0, 0)
-                startActivity(activity?.intent?.apply {
+                activity?.overrideActivityTransition( OVERRIDE_TRANSITION_OPEN, 0, R.anim.bottom_sheet_slide_in)
+                activity?.intent?.apply {
                     putExtra(EXTRA_SHOULD_RESTART, true)
                     addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                })
+                }?.let { startActivity(it) }
             }
         }
 

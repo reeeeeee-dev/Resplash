@@ -69,7 +69,7 @@ class AutoWallpaperSettingsActivity :
                     when (it?.first()?.state) {
                         BLOCKED, ENQUEUED, RUNNING -> snackbar.show()
                         SUCCEEDED -> snackbar.dismiss()
-                        FAILED, CANCELLED -> {
+                        FAILED, CANCELLED, null -> {
                             snackbar.dismiss()
                             binding.root.showSnackBar(R.string.error_setting_wallpaper)
                         }

@@ -94,6 +94,7 @@ class AddCollectionBottomSheet : BottomSheetDialogFragment(), AddCollectionAdapt
                                     resetInput()
                                 }
                                 is Result.Error, Result.NetworkError -> context?.toast(R.string.oops)
+                                Result.Loading -> TODO()
                             }
                         }
                     }

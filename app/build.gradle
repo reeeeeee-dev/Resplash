@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.android.gms.oss-licenses-plugin'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'com.google.devtools.ksp'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-parcelize'
@@ -11,12 +12,11 @@ def localProperties = new Properties()
 localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion '30.0.3'
+    compileSdk 34
     defaultConfig {
         applicationId 'com.b_lam.resplash'
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 34
         versionCode 58
         versionName '3.3.7'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -46,6 +46,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
     bundle {
         language {
@@ -55,9 +56,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    lintOptions {
-        disable 'MissingTranslation'
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -65,6 +63,10 @@ android {
     sourceSets {
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
     }
+    lint {
+        disable 'MissingTranslation'
+    }
+    namespace 'com.b_lam.resplash'
 }
 
 dependencies {
@@ -90,9 +92,9 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-service:2.4.0'
 
     // Room
-    implementation 'androidx.room:room-runtime:2.4.0'
-    implementation 'androidx.room:room-ktx:2.4.0'
-    kapt 'androidx.room:room-compiler:2.4.0'
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    ksp 'androidx.room:room-compiler:2.6.1'
 
     // Material components
     implementation 'com.google.android.material:material:1.6.0-alpha01'
@@ -118,7 +120,7 @@ dependencies {
 
     // Moshi
     implementation 'com.squareup.moshi:moshi:1.12.0'
-    kapt 'com.squareup.moshi:moshi-kotlin-codegen:1.12.0'
+    ksp 'com.squareup.moshi:moshi-kotlin-codegen:1.15.1'
 
     // Glide
     implementation 'com.github.bumptech.glide:glide:4.12.0'
@@ -160,7 +162,7 @@ dependencies {
     implementation 'org.ocpsoft.prettytime:prettytime:4.0.4.Final'
 
     // Open source notices
-    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.1'
 
     // Muzei
     implementation 'com.google.android.apps.muzei:muzei-api:3.4.0'
@@ -171,7 +173,7 @@ dependencies {
     // Unit tests
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
 
     // Room testing

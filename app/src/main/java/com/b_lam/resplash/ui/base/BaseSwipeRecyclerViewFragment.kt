@@ -89,8 +89,8 @@ abstract class BaseSwipeRecyclerViewFragment<T : Any, VH: RecyclerView.ViewHolde
         when (networkState) {
             is NetworkState.SUCCESS -> showSuccessState()
             is NetworkState.ERROR -> binding.swipeRefreshLayout.showSnackBar(R.string.oops)
+            NetworkState.LOADING -> showLoadingState()
             NetworkState.EMPTY -> TODO()
-            NetworkState.LOADING -> TODO()
         }
     }
 

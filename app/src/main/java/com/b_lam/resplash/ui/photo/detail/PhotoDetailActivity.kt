@@ -3,13 +3,16 @@ package com.b_lam.resplash.ui.photo.detail
 import android.Manifest
 import android.app.WallpaperManager
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
@@ -89,11 +92,12 @@ class PhotoDetailActivity :
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStart() {
         super.onStart()
 
         downloadReceiver = registerReceiver(IntentFilter(ACTION_DOWNLOAD_COMPLETE)) {
-            it?.let { handleDownloadIntent(it) }
+            it?.let { handleDownloadIntent(it, ContextCompat.RECEIVER_NOT_EXPORTED) }
         }
     }
 
@@ -325,7 +329,7 @@ class PhotoDetailActivity :
         }
     }
 
-    private fun handleDownloadIntent(intent: Intent) {
+    private fun handleDownloadIntent(intent: Intent, RECEIVER_EXPORTED: Int) {
         val action = intent.getSerializableExtra(DATA_ACTION) as? DownloadAction
         val status = intent.getIntExtra(DOWNLOAD_STATUS, -1)
 

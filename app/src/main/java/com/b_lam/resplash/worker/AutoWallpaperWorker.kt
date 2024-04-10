@@ -248,7 +248,7 @@ class AutoWallpaperWorker(
                         .setInputData(data)
                         .setBackoffCriteria(
                             BackoffPolicy.EXPONENTIAL,
-                            OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
+                            WorkRequest.MIN_BACKOFF_MILLIS,
                             TimeUnit.MILLISECONDS
                         )
                         .build()
@@ -299,7 +299,7 @@ class AutoWallpaperWorker(
                     WorkManager.getInstance(context).cancelUniqueWork(AUTO_WALLPAPER_FUTURE_JOB_ID)
                     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                         AUTO_WALLPAPER_JOB_ID,
-                        ExistingPeriodicWorkPolicy.REPLACE,
+                        ExistingPeriodicWorkPolicy.UPDATE,
                         request
                     )
                 } else {

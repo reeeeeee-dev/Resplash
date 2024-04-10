@@ -14,7 +14,7 @@ import com.b_lam.resplash.util.error
 import com.b_lam.resplash.util.livedata.Event
 import com.b_lam.resplash.util.warn
 import kotlinx.coroutines.*
-import java.util.*
+import kotlin.collections.HashSet
 
 class BillingRepository(
     private val application: Application
@@ -100,7 +100,7 @@ class BillingRepository(
         when (billingResult.responseCode) {
             BillingClient.BillingResponseCode.OK -> {
                 debug("onBillingSetupFinished successfully")
-                querySkuDetailsAsync(BillingClient.SkuType.INAPP, INAPP_SKUS)
+                querySkuDetailsAsync(INAPP_SKUS)
                 queryPurchasesAsync()
             }
             BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> debug(billingResult.debugMessage)
@@ -128,21 +128,25 @@ class BillingRepository(
     fun queryPurchasesAsync(restore: Boolean = false) {
         debug("queryPurchasesAsync called")
         val purchasesResult = HashSet<Purchase>()
-        val result = playStoreBillingClient.queryPurchases(BillingClient.SkuType.INAPP)
-        debug("queryPurchasesAsync INAPP results: ${result.purchasesList?.size}")
-        result.purchasesList?.apply { purchasesResult.addAll(this) }
-        if (restore && result.purchasesList.isNullOrEmpty()) {
-            _billingMessageLiveData.postValue(Event("No purchases found"))
+        playStoreBillingClient.queryPurchasesAsync(BillingClient.SkuType.INAPP) { result, purchasesList ->
+            if(result.responseCode == BillingClient.BillingResponseCode.OK) {
+                debug("queryPurchasesAsync INAPP results: ${purchasesList.size}")
+                purchasesResult.addAll(purchasesList)
+
+                if(restore && purchasesList.isEmpty()) {
+                    _billingMessageLiveData.postValue(Event("No purchases found"))
+                }
+
+                processPurchases(purchasesResult)
+            }
         }
-        processPurchases(purchasesResult)
     }
 
     private fun querySkuDetailsAsync(
-        @BillingClient.SkuType skuType: String,
         skuList: List<String>
     ) {
-        debug("querySkuDetailsAsync for $skuType")
-        val params = SkuDetailsParams.newBuilder().setSkusList(skuList).setType(skuType).build()
+        debug("querySkuDetailsAsync for ${BillingClient.SkuType.INAPP}")
+        val params = SkuDetailsParams.newBuilder().setSkusList(skuList).setType(BillingClient.SkuType.INAPP).build()
         playStoreBillingClient.querySkuDetailsAsync(params) { billingResult, skuDetailsList ->
             when (billingResult.responseCode) {
                 BillingClient.BillingResponseCode.OK -> {
@@ -173,17 +177,19 @@ class BillingRepository(
                     if (isSignatureValid(purchase)) {
                         validPurchases.add(purchase)
                     } else {
-                        _billingMessageLiveData.postValue(Event("Unable to validate purchase"))
+                        withContext(Dispatchers.Main) {
+                            _billingMessageLiveData.postValue(Event("Unable to validate purchase"))
+                        }
                     }
                 } else if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
-                    debug("Received a pending purchase of SKU: ${purchase.sku}")
+                    debug("Received a pending purchase of SKUs: ${purchase.skus[0]}")
                     _billingMessageLiveData.postValue(Event("Purchase is pending"))
                 } else {
                     debug("Received an UNSPECIFIED_STATE purchase: $purchase")
                 }
             }
             val (consumables, nonConsumables) = validPurchases.partition {
-                Sku.CONSUMABLE_SKUS.contains(it.sku)
+                Sku.CONSUMABLE_SKUS.contains(it.skus[0])
             }
             debug("processPurchases consumables content $consumables")
             debug("processPurchases non-consumables content $nonConsumables")
@@ -239,12 +245,13 @@ class BillingRepository(
 
     private fun disburseConsumableEntitlements(purchase: Purchase) =
         CoroutineScope(Job() + Dispatchers.IO).launch {
-            if (Sku.CONSUMABLE_SKUS.contains(purchase.sku)) {
-                when (purchase.sku) {
-                    Sku.COFFEE -> updateDonations(purchase.sku, Donation(LEVEL_COFFEE))
-                    Sku.SMOOTHIE -> updateDonations(purchase.sku, Donation(LEVEL_SMOOTHIE))
-                    Sku.PIZZA -> updateDonations(purchase.sku, Donation(LEVEL_PIZZA))
-                    Sku.FANCY_MEAL -> updateDonations(purchase.sku, Donation(LEVEL_FANCY_MEAL))
+            val sku = purchase.skus[0]
+            if (Sku.CONSUMABLE_SKUS.contains(sku)) {
+                when (sku) {
+                    Sku.COFFEE -> updateDonations(sku, Donation(LEVEL_COFFEE))
+                    Sku.SMOOTHIE -> updateDonations(sku, Donation(LEVEL_SMOOTHIE))
+                    Sku.PIZZA -> updateDonations(sku, Donation(LEVEL_PIZZA))
+                    Sku.FANCY_MEAL -> updateDonations(sku, Donation(LEVEL_FANCY_MEAL))
                 }
                 _purchaseCompleteLiveData.postValue(Event(purchase))
             }
@@ -254,12 +261,12 @@ class BillingRepository(
     private fun disburseNonConsumableEntitlement(purchase: Purchase) {
         debug("disburseNonConsumableEntitlement")
         CoroutineScope(Job() + Dispatchers.IO).launch {
-            when (purchase.sku) {
+            when (val sku = purchase.skus[0]) {
                 Sku.RESPLASH_PRO -> {
                     val resplashPro = ResplashPro(true)
                     insert(resplashPro)
                     localCacheBillingClient.skuDetailsDao()
-                        .insertOrUpdate(purchase.sku, resplashPro.mayPurchase())
+                        .insertOrUpdate(sku, resplashPro.mayPurchase())
                 }
             }
             localCacheBillingClient.purchaseDao().delete(purchase)

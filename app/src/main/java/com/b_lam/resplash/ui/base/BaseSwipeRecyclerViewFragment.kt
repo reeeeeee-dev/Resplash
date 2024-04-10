@@ -79,7 +79,7 @@ abstract class BaseSwipeRecyclerViewFragment<T : Any, VH: RecyclerView.ViewHolde
                 showErrorState()
             }
 
-            NetworkState.SUCCESS -> TODO()
+            NetworkState.SUCCESS -> showSuccessState()
         }
         binding.swipeRefreshLayout.isRefreshing =
             binding.swipeRefreshLayout.isRefreshing && refreshState is NetworkState.LOADING
@@ -90,7 +90,7 @@ abstract class BaseSwipeRecyclerViewFragment<T : Any, VH: RecyclerView.ViewHolde
             is NetworkState.SUCCESS -> showSuccessState()
             is NetworkState.ERROR -> binding.swipeRefreshLayout.showSnackBar(R.string.oops)
             NetworkState.LOADING -> showLoadingState()
-            NetworkState.EMPTY -> TODO()
+            NetworkState.EMPTY -> showEmptyState()
         }
     }
 

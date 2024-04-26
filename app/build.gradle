@@ -133,6 +133,7 @@ dependencies {
 
     // Firebase
     implementation 'com.google.firebase:firebase-analytics-ktx:20.0.2'
+    implementation platform('com.google.firebase:firebase-bom:32.8.0')
     implementation 'com.google.firebase:firebase-crashlytics:18.6.3'
     implementation('com.google.firebase:firebase-inappmessaging-ktx:20.1.0', {
         exclude group: 'io.grpc', module: 'grpc-okhttp'

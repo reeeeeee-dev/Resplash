@@ -1,12 +1,16 @@
 package com.b_lam.resplash.util
 
+import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.b_lam.resplash.GlideApp
@@ -40,6 +44,24 @@ class NotificationManager(private val context: Context) {
         notificationManager.cancel(id)
     }
 
+    private fun notify(id: Int, notification: Notification) {
+        if (ActivityCompat.checkSelfPermission(
+                this.context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        notificationManager.notify(id, notification)
+    }
+
     fun showTileServiceDownloadingNotification() {
         val builder = NotificationCompat.Builder(context, NEXT_AUTO_WALLPAPER_CHANNEL_ID).apply {
             priority = NotificationCompat.PRIORITY_DEFAULT
@@ -48,7 +70,7 @@ class NotificationManager(private val context: Context) {
             setProgress(0, 0, true)
             setTimeoutAfter(60_000)
         }
-        notificationManager.notify(AUTO_WALLPAPER_TILE_NOTIFICATION_ID, builder.build())
+        notify(AUTO_WALLPAPER_TILE_NOTIFICATION_ID, builder.build())
     }
 
     fun showTileServiceErrorNotification() {
@@ -57,7 +79,7 @@ class NotificationManager(private val context: Context) {
             setSmallIcon(R.drawable.ic_resplash_24dp)
             setContentTitle(context.getString(R.string.error_setting_wallpaper))
         }
-        notificationManager.notify(AUTO_WALLPAPER_TILE_NOTIFICATION_ID, builder.build())
+        notify(AUTO_WALLPAPER_TILE_NOTIFICATION_ID, builder.build())
     }
 
     fun hideTileServiceNotification() {
@@ -93,7 +115,7 @@ class NotificationManager(private val context: Context) {
             setProgress(0, 0, false)
             setAutoCancel(true)
         }
-        notificationManager.notify(fileName.hashCode(), builder.build())
+        notify(fileName.hashCode(), builder.build())
     }
 
     fun showDownloadErrorNotification(fileName: String) {
@@ -104,7 +126,7 @@ class NotificationManager(private val context: Context) {
             setContentText(context.getString(R.string.oops))
             setProgress(0, 0, false)
         }
-        notificationManager.notify(fileName.hashCode(), builder.build())
+        notify(fileName.hashCode(), builder.build())
     }
 
     fun showNewAutoWallpaperNotification(
@@ -128,7 +150,7 @@ class NotificationManager(private val context: Context) {
             }
             setOngoing(persist)
         }
-        notificationManager.notify(NEW_AUTO_WALLPAPER_NOTIFICATION_ID, builder.build())
+        notify(NEW_AUTO_WALLPAPER_NOTIFICATION_ID, builder.build())
     }
 
     fun hideNewAutoWallpaperNotification() {
